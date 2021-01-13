@@ -2,6 +2,7 @@ package com.plastickarma.producerswithpriority
 
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
+import kotlin.math.floor
 import kotlin.random.Random
 
 /**
@@ -13,18 +14,38 @@ class Scheduler {
      * Schedules different producers with priority configuration.
      * @return [Flow] of values that come from the given producers.
      */
-    suspend fun <T> schedule(
+    fun <T> schedule(
         producers: List<Pair<PriorityConfiguration, Producer<T>>>,
         epochs: EpochGenerator = INFINITE
         ) : Flow<T> {
-        val sum = producers.sumByDouble { it.first.shares }
-        val prioritizedProducers = buildPrioritizedProducers(producers, sum)
+        val penalties: MutableMap<Producer<T>, Double> = mutableMapOf()
+        var (sum, prioritizedProducers) = buildPrioritizedProducers(producers, penalties)
         val random: Random = Random.Default
+
+
         return flow {
             while (epochs()) {
                 val next: Double = random.nextDouble(0.0, sum)
-                val nextValue = getNextProducer(next, prioritizedProducers).producer().get()
-                emit(nextValue)
+                val nextProducer = getNextProducer(next, prioritizedProducers)
+                val nextValue = nextProducer.producer().get()
+                if (nextValue != null) {
+                    emit(nextValue)
+                    if (nextProducer.producer() in penalties) {
+                        penalties.remove(nextProducer.producer())
+                        // penalties changed - recalculate priorities
+                        val updatedPriority = buildPrioritizedProducers(producers, penalties)
+                        sum = updatedPriority.first
+                        prioritizedProducers = updatedPriority.second
+                    }
+                } else {
+                    if (nextProducer.first.config.possiblePenalty > 0.0) {
+                        // penalties changed - recalculate priorities
+                        penalties[nextProducer.producer()] = nextProducer.first.config.possiblePenalty
+                        val updatedPriority = buildPrioritizedProducers(producers, penalties)
+                        sum = updatedPriority.first
+                        prioritizedProducers = updatedPriority.second
+                    }
+                }
             }
         }
     }
@@ -40,25 +61,41 @@ class Scheduler {
 
     private fun <T> buildPrioritizedProducers(
         producers: List<Pair<PriorityConfiguration, Producer<T>>>,
-        sum: Double
-    ): PrioritizedProducers<T> {
-        var allRange = 0.0.until(sum)
+        penalties: Map<Producer<T>, Double>
+    ): Pair<Double, MutableList<Pair<PriorityRange, Producer<T>>>> {
         val prioritizedProducers: MutableList<Pair<PriorityRange, Producer<T>>> = mutableListOf()
+
+        val initialShares: MutableMap<Pair<PriorityConfiguration, Producer<T>>, Double> =
+            producers.associateBy({pair -> pair} , { pair -> pair.first.shares }).toMutableMap()
+
+        for (producer in producers) {
+            if (producer.second in penalties) {
+                val penalty = penalties[producer.second]!!
+                initialShares[producer] = initialShares[producer]!! - penalty
+            }
+        }
+
+        fun Pair<PriorityConfiguration, Producer<T>>.shares(): Double {
+            return initialShares[this]!!
+        }
+
+        val sum = producers.sumByDouble { it.shares() }
+        var allRange = 0.0.until(sum)
         producers
-            .sortedBy { it.first.shares }
+            .sortedBy { it.shares() }
             .forEach {
 
                 // last range
-                if (it.first.shares + allRange.start >= sum) {
+                if (it.shares() + allRange.start >= sum) {
                     prioritizedProducers.add(Pair(PriorityRange(allRange, it.first), it.second))
                 } else {
-                    val (percentile, newAllRange) = allRange.split(it.first.shares + allRange.start)
+                    val (percentile, newAllRange) = allRange.split(it.shares() + allRange.start)
                     prioritizedProducers.add(Pair(PriorityRange(percentile, it.first), it.second))
                     allRange = newAllRange
                 }
 
             }
-        return prioritizedProducers
+        return Pair(sum, prioritizedProducers)
     }
 
 }

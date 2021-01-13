@@ -23,6 +23,11 @@ kotlin {
     jvm()
     js {
         nodejs {
+            testTask {
+                useMocha {
+                    timeout = "15000"
+                }
+            }
         }
     }
     sourceSets {

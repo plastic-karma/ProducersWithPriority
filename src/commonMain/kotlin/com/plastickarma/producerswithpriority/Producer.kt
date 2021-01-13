@@ -8,5 +8,5 @@ interface Producer<T> {
     /**
      * Get value.
      */
-    suspend fun get(): T
+    suspend fun get(): T?
 }
