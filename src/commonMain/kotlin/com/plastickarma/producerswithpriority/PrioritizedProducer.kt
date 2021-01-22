@@ -6,7 +6,7 @@ package com.plastickarma.producerswithpriority
 typealias PrioritizedProducer<T> = Pair<PriorityRange, Producer<T>>
 
 /**
- * Type alias for a list of PrioritizedProducer
+ * Type alias for a list of PrioritizedProducer.
  */
 typealias PrioritizedProducers<T> = List<PrioritizedProducer<T>>
 

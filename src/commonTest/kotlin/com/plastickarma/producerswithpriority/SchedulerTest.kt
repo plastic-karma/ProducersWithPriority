@@ -9,7 +9,7 @@ import kotlin.test.assertEquals
 class SchedulerTest {
 
     private fun producer(value: String?): Producer<String> = object : Producer<String> {
-        override suspend fun get(): String? {
+        override suspend fun next(): String? {
             return value;
         }
     }
@@ -17,7 +17,7 @@ class SchedulerTest {
     private fun producerWithNull(vararg values: String?): Producer<String> = object : Producer<String> {
         val iterator = values.iterator()
         var lastValue: String? = null
-        override suspend fun get(): String? {
+        override suspend fun next(): String? {
             if(iterator.hasNext()) {
                 lastValue = iterator.next()
             }

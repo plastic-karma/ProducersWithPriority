@@ -2,7 +2,6 @@ package com.plastickarma.producerswithpriority
 
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
-import kotlin.math.floor
 import kotlin.random.Random
 
 /**
@@ -34,7 +33,7 @@ class Scheduler {
             while (epochs()) {
                 val next: Double = random.nextDouble(0.0, sum)
                 val nextProducer = getNextProducer(next, prioritizedProducers)
-                val nextValue = nextProducer.producer().get()
+                val nextValue = nextProducer.producer().next()
                 if (nextValue != null) {
                     emit(nextValue)
                     if (nextProducer.producer() in penalties) {
@@ -59,7 +58,7 @@ class Scheduler {
                 return producer
             }
         }
-        throw IllegalStateException("no producer found for $next in $producers")
+        error("no producer found for $next in $producers")
     }
 
     private fun <T> buildPrioritizedProducers(
@@ -82,14 +81,14 @@ class Scheduler {
             return initialShares[this]!!
         }
 
-        val sum = producers.sumByDouble { it.shares() }
-        var allRange = 0.0.until(sum)
+        val allShares = producers.sumByDouble { it.shares() }
+        var allRange = 0.0.until(allShares)
         producers
             .sortedBy { it.shares() }
             .forEach {
 
                 // last range
-                if (it.shares() + allRange.start >= sum) {
+                if (it.shares() + allRange.start >= allShares) {
                     prioritizedProducers.add(Pair(PriorityRange(allRange, it.first), it.second))
                 } else {
                     val (percentile, newAllRange) = allRange.split(it.shares() + allRange.start)
@@ -98,7 +97,7 @@ class Scheduler {
                 }
 
             }
-        return Pair(sum, prioritizedProducers)
+        return Pair(allShares, prioritizedProducers)
     }
 
 }
