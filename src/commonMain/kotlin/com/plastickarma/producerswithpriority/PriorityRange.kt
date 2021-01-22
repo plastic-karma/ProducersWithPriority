@@ -5,4 +5,5 @@ package com.plastickarma.producerswithpriority
  */
 data class PriorityRange(
     val range: SemiOpenRange,
-    val config: PriorityConfiguration)
+    val config: PriorityConfiguration
+)

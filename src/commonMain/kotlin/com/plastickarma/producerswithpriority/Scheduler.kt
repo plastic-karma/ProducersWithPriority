@@ -17,7 +17,7 @@ class Scheduler {
         producers: List<Pair<PriorityConfiguration, Producer<T>>>,
         epochs: EpochGenerator = INFINITE,
         priorityEventHandler: (PrioritizedProducers<T>) -> Unit = { },
-        ) : Flow<T> {
+    ): Flow<T> {
         val penalties: MutableMap<Producer<T>, Double> = mutableMapOf()
         var (sum, prioritizedProducers) = buildPrioritizedProducers(producers, penalties)
         val random: Random = Random.Default
@@ -68,7 +68,7 @@ class Scheduler {
         val prioritizedProducers: MutableList<Pair<PriorityRange, Producer<T>>> = mutableListOf()
 
         val initialShares: MutableMap<Pair<PriorityConfiguration, Producer<T>>, Double> =
-            producers.associateBy({pair -> pair} , { pair -> pair.first.shares }).toMutableMap()
+            producers.associateBy({ pair -> pair }, { pair -> pair.first.shares }).toMutableMap()
 
         for (producer in producers) {
             if (producer.second in penalties) {
@@ -95,9 +95,7 @@ class Scheduler {
                     prioritizedProducers.add(Pair(PriorityRange(percentile, it.first), it.second))
                     allRange = newAllRange
                 }
-
             }
         return Pair(allShares, prioritizedProducers)
     }
-
 }

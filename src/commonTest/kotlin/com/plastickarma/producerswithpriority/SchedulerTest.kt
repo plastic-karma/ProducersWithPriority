@@ -2,7 +2,6 @@ package com.plastickarma.producerswithpriority
 
 import kotlinx.coroutines.flow.toList
 import runBlockingTest
-import kotlin.test.Ignore
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -10,7 +9,7 @@ class SchedulerTest {
 
     private fun producer(value: String?): Producer<String> = object : Producer<String> {
         override suspend fun next(): String? {
-            return value;
+            return value
         }
     }
 
@@ -18,14 +17,14 @@ class SchedulerTest {
         val iterator = values.iterator()
         var lastValue: String? = null
         override suspend fun next(): String? {
-            if(iterator.hasNext()) {
+            if (iterator.hasNext()) {
                 lastValue = iterator.next()
             }
             return lastValue
         }
     }
 
-    private fun fixedEpochs(epochs: Int) : EpochGenerator {
+    private fun fixedEpochs(epochs: Int): EpochGenerator {
         var counter = 0
         return { counter++ < epochs }
     }
@@ -74,7 +73,6 @@ class SchedulerTest {
         val dValues = collectedValues.filter { it == "D" }.size.toDouble()
         val eValues = collectedValues.filter { it == "E" }.size.toDouble()
         val fValues = collectedValues.filter { it == "F" }.size.toDouble()
-
 
         assertCloseTo(0.10, aValues / epochs)
         assertCloseTo(0.15, bValues / epochs)
