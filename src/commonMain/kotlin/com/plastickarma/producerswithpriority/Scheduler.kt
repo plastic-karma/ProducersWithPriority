@@ -16,12 +16,19 @@ class Scheduler {
      */
     fun <T> schedule(
         producers: List<Pair<PriorityConfiguration, Producer<T>>>,
-        epochs: EpochGenerator = INFINITE
+        epochs: EpochGenerator = INFINITE,
+        priorityEventHandler: (PrioritizedProducers<T>) -> Unit = { },
         ) : Flow<T> {
         val penalties: MutableMap<Producer<T>, Double> = mutableMapOf()
         var (sum, prioritizedProducers) = buildPrioritizedProducers(producers, penalties)
         val random: Random = Random.Default
 
+        fun updatePriorities() {
+            val updatedPriority = buildPrioritizedProducers(producers, penalties)
+            sum = updatedPriority.first
+            prioritizedProducers = updatedPriority.second
+            priorityEventHandler(prioritizedProducers)
+        }
 
         return flow {
             while (epochs()) {
@@ -33,17 +40,13 @@ class Scheduler {
                     if (nextProducer.producer() in penalties) {
                         penalties.remove(nextProducer.producer())
                         // penalties changed - recalculate priorities
-                        val updatedPriority = buildPrioritizedProducers(producers, penalties)
-                        sum = updatedPriority.first
-                        prioritizedProducers = updatedPriority.second
+                        updatePriorities()
                     }
                 } else {
-                    if (nextProducer.first.config.possiblePenalty > 0.0) {
-                        // penalties changed - recalculate priorities
+                    if (nextProducer.first.config.possiblePenalty > 0.0 && nextProducer.producer() !in penalties) {
                         penalties[nextProducer.producer()] = nextProducer.first.config.possiblePenalty
-                        val updatedPriority = buildPrioritizedProducers(producers, penalties)
-                        sum = updatedPriority.first
-                        prioritizedProducers = updatedPriority.second
+                        // penalties changed - recalculate priorities
+                        updatePriorities()
                     }
                 }
             }
