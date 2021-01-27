@@ -126,7 +126,7 @@ class SchedulerTest {
         val producerB = producer("B")
         val nullProducer = producer(null)
         val epochs = 1000000
-        val priorityUpdateEvents = mutableListOf<PrioritizedProducers<String>>()
+        val priorityUpdateEvents = mutableListOf<List<PrioritizedProducer<String>>>()
         val values = Scheduler().schedule(
             epochs = fixedEpochs(epochs),
             priorityEventHandler = priorityUpdateEvents::add,
@@ -150,13 +150,13 @@ class SchedulerTest {
         assertEquals(1, priorityUpdateEvents.size)
 
         // range of first producer has not changed
-        assertEquals(SemiOpenRange(0.0, 15.0), priorityUpdateEvents.first().getBy(producerA).first.range)
+        assertEquals(SemiOpenRange(0.0, 15.0), priorityUpdateEvents.first().getBy(producerA).rangeConfiguration.range)
 
         // range of second producer has not changed
-        assertEquals(SemiOpenRange(15.0, 30.0), priorityUpdateEvents.first().getBy(producerB).first.range)
+        assertEquals(SemiOpenRange(15.0, 30.0), priorityUpdateEvents.first().getBy(producerB).rangeConfiguration.range)
 
         // range of null producer has changed
-        assertEquals(SemiOpenRange(30.0, 60.0), priorityUpdateEvents.first().getBy(nullProducer).first.range)
+        assertEquals(SemiOpenRange(30.0, 60.0), priorityUpdateEvents.first().getBy(nullProducer).rangeConfiguration.range)
     }
 
     @Test
@@ -165,7 +165,7 @@ class SchedulerTest {
         val producerB = producer("B")
         val nullProducer = producerWithNull("C", null, "C", "C", null, "C")
         val epochs = 100
-        val priorityUpdateEvents = mutableListOf<PrioritizedProducers<String>>()
+        val priorityUpdateEvents = mutableListOf<List<PrioritizedProducer<String>>>()
         Scheduler().schedule(
             epochs = fixedEpochs(epochs),
             priorityEventHandler = priorityUpdateEvents::add,
@@ -180,27 +180,27 @@ class SchedulerTest {
         assertEquals(4, priorityUpdateEvents.size)
 
         // first change: nullProducer changes to 30 shares
-        assertEquals(SemiOpenRange(0.0, 15.0), priorityUpdateEvents[0].getBy(producerA).first.range)
-        assertEquals(SemiOpenRange(15.0, 30.0), priorityUpdateEvents[0].getBy(producerB).first.range)
-        assertEquals(SemiOpenRange(30.0, 60.0), priorityUpdateEvents[0].getBy(nullProducer).first.range)
+        assertEquals(SemiOpenRange(0.0, 15.0), priorityUpdateEvents[0].getBy(producerA).rangeConfiguration.range)
+        assertEquals(SemiOpenRange(15.0, 30.0), priorityUpdateEvents[0].getBy(producerB).rangeConfiguration.range)
+        assertEquals(SemiOpenRange(30.0, 60.0), priorityUpdateEvents[0].getBy(nullProducer).rangeConfiguration.range)
 
         // second change: nullProducer changes back to 70 shares
-        assertEquals(SemiOpenRange(0.0, 15.0), priorityUpdateEvents[1].getBy(producerA).first.range)
-        assertEquals(SemiOpenRange(15.0, 30.0), priorityUpdateEvents[1].getBy(producerB).first.range)
-        assertEquals(SemiOpenRange(30.0, 100.0), priorityUpdateEvents[1].getBy(nullProducer).first.range)
+        assertEquals(SemiOpenRange(0.0, 15.0), priorityUpdateEvents[1].getBy(producerA).rangeConfiguration.range)
+        assertEquals(SemiOpenRange(15.0, 30.0), priorityUpdateEvents[1].getBy(producerB).rangeConfiguration.range)
+        assertEquals(SemiOpenRange(30.0, 100.0), priorityUpdateEvents[1].getBy(nullProducer).rangeConfiguration.range)
 
         // third change: nullProducer changes to 30 shares
-        assertEquals(SemiOpenRange(0.0, 15.0), priorityUpdateEvents[2].getBy(producerA).first.range)
-        assertEquals(SemiOpenRange(15.0, 30.0), priorityUpdateEvents[2].getBy(producerB).first.range)
-        assertEquals(SemiOpenRange(30.0, 60.0), priorityUpdateEvents[2].getBy(nullProducer).first.range)
+        assertEquals(SemiOpenRange(0.0, 15.0), priorityUpdateEvents[2].getBy(producerA).rangeConfiguration.range)
+        assertEquals(SemiOpenRange(15.0, 30.0), priorityUpdateEvents[2].getBy(producerB).rangeConfiguration.range)
+        assertEquals(SemiOpenRange(30.0, 60.0), priorityUpdateEvents[2].getBy(nullProducer).rangeConfiguration.range)
 
         // fourth change: nullProducer changes back to 70 shares
-        assertEquals(SemiOpenRange(0.0, 15.0), priorityUpdateEvents[3].getBy(producerA).first.range)
-        assertEquals(SemiOpenRange(15.0, 30.0), priorityUpdateEvents[3].getBy(producerB).first.range)
-        assertEquals(SemiOpenRange(30.0, 100.0), priorityUpdateEvents[3].getBy(nullProducer).first.range)
+        assertEquals(SemiOpenRange(0.0, 15.0), priorityUpdateEvents[3].getBy(producerA).rangeConfiguration.range)
+        assertEquals(SemiOpenRange(15.0, 30.0), priorityUpdateEvents[3].getBy(producerB).rangeConfiguration.range)
+        assertEquals(SemiOpenRange(30.0, 100.0), priorityUpdateEvents[3].getBy(nullProducer).rangeConfiguration.range)
     }
 
-    private fun <T> PrioritizedProducers<T>.getBy(producer: Producer<T>) = this.find { it.second == producer }!!
+    private fun <T> List<PrioritizedProducer<T>>.getBy(producer: Producer<T>) = this.find { it.producer == producer }!!
 
     private fun assertCloseTo(expected: Double, actual: Double, e: Double = 0.05) {
         if (actual >= expected - e && actual <= expected + e) {

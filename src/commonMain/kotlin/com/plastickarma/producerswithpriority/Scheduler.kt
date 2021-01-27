@@ -16,7 +16,7 @@ class Scheduler {
     fun <T> schedule(
         producers: List<Pair<PriorityConfiguration, Producer<T>>>,
         epochs: EpochGenerator = INFINITE,
-        priorityEventHandler: (PrioritizedProducers<T>) -> Unit = { },
+        priorityEventHandler: (List<PrioritizedProducer<T>>) -> Unit = { },
     ): Flow<T> {
         val penalties: MutableMap<Producer<T>, Double> = mutableMapOf()
         var (sum, prioritizedProducers) = buildPrioritizedProducers(producers, penalties)
@@ -33,17 +33,19 @@ class Scheduler {
             while (epochs()) {
                 val next: Double = random.nextDouble(0.0, sum)
                 val nextProducer = getNextProducer(next, prioritizedProducers)
-                val nextValue = nextProducer.producer().next()
+                val nextValue = nextProducer.producer.next()
                 if (nextValue != null) {
                     emit(nextValue)
-                    if (nextProducer.producer() in penalties) {
-                        penalties.remove(nextProducer.producer())
+                    if (nextProducer.producer in penalties) {
+                        penalties.remove(nextProducer.producer)
                         // penalties changed - recalculate priorities
                         updatePriorities()
                     }
                 } else {
-                    if (nextProducer.first.config.possiblePenalty > 0.0 && nextProducer.producer() !in penalties) {
-                        penalties[nextProducer.producer()] = nextProducer.first.config.possiblePenalty
+                    if (nextProducer.rangeConfiguration.config.possiblePenalty > 0.0 &&
+                        nextProducer.producer !in penalties
+                    ) {
+                        penalties[nextProducer.producer] = nextProducer.rangeConfiguration.config.possiblePenalty
                         // penalties changed - recalculate priorities
                         updatePriorities()
                     }
@@ -52,9 +54,9 @@ class Scheduler {
         }
     }
 
-    private fun <T> getNextProducer(next: Double, producers: PrioritizedProducers<T>): PrioritizedProducer<T> {
+    private fun <T> getNextProducer(next: Double, producers: List<PrioritizedProducer<T>>): PrioritizedProducer<T> {
         for (producer in producers) {
-            if (next in producer.range()) {
+            if (next in producer.rangeConfiguration.range) {
                 return producer
             }
         }
@@ -64,8 +66,8 @@ class Scheduler {
     private fun <T> buildPrioritizedProducers(
         producers: List<Pair<PriorityConfiguration, Producer<T>>>,
         penalties: Map<Producer<T>, Double>
-    ): Pair<Double, MutableList<Pair<PriorityRange, Producer<T>>>> {
-        val prioritizedProducers: MutableList<Pair<PriorityRange, Producer<T>>> = mutableListOf()
+    ): Pair<Double, MutableList<PrioritizedProducer<T>>> {
+        val prioritizedProducers: MutableList<PrioritizedProducer<T>> = mutableListOf()
 
         val initialShares: MutableMap<Pair<PriorityConfiguration, Producer<T>>, Double> =
             producers.associateBy({ pair -> pair }, { pair -> pair.first.shares }).toMutableMap()
@@ -89,10 +91,10 @@ class Scheduler {
 
                 // last range
                 if (it.shares() + allRange.start >= allShares) {
-                    prioritizedProducers.add(Pair(PriorityRange(allRange, it.first), it.second))
+                    prioritizedProducers.add(PrioritizedProducer(RangeConfiguration(allRange, it.first), it.second))
                 } else {
                     val (percentile, newAllRange) = allRange.split(it.shares() + allRange.start)
-                    prioritizedProducers.add(Pair(PriorityRange(percentile, it.first), it.second))
+                    prioritizedProducers.add(PrioritizedProducer(RangeConfiguration(percentile, it.first), it.second))
                     allRange = newAllRange
                 }
             }
