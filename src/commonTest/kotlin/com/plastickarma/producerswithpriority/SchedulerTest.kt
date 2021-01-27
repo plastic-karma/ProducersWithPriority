@@ -35,9 +35,9 @@ class SchedulerTest {
         val values = Scheduler().schedule(
             epochs = fixedEpochs(epochs),
             producers = listOf(
-                Pair(PriorityConfiguration(shares = 10.0), producer("A")),
-                Pair(PriorityConfiguration(shares = 75.0), producer("B")),
-                Pair(PriorityConfiguration(shares = 15.0), producer("C"))
+                PriorityConfiguration(shares = 10.0) to producer("A"),
+                PriorityConfiguration(shares = 75.0) to producer("B"),
+                PriorityConfiguration(shares = 15.0) to producer("C")
             )
         )
 
@@ -57,12 +57,12 @@ class SchedulerTest {
         val values = Scheduler().schedule(
             epochs = fixedEpochs(epochs),
             producers = listOf(
-                Pair(PriorityConfiguration(shares = 10.0), producer("A")),
-                Pair(PriorityConfiguration(shares = 15.0), producer("B")),
-                Pair(PriorityConfiguration(shares = 20.0), producer("C")),
-                Pair(PriorityConfiguration(shares = 20.0), producer("D")),
-                Pair(PriorityConfiguration(shares = 12.0), producer("E")),
-                Pair(PriorityConfiguration(shares = 18.0), producer("F"))
+                PriorityConfiguration(shares = 10.0) to producer("A"),
+                PriorityConfiguration(shares = 15.0) to producer("B"),
+                PriorityConfiguration(shares = 20.0) to producer("C"),
+                PriorityConfiguration(shares = 20.0) to producer("D"),
+                PriorityConfiguration(shares = 12.0) to producer("E"),
+                PriorityConfiguration(shares = 18.0) to producer("F")
             )
         )
 
@@ -88,9 +88,9 @@ class SchedulerTest {
         val values = Scheduler().schedule(
             epochs = fixedEpochs(epochs),
             producers = listOf(
-                Pair(PriorityConfiguration(shares = 20.0), producer("A")),
-                Pair(PriorityConfiguration(shares = 20.0), producer("B")),
-                Pair(PriorityConfiguration(shares = 20.0), producer("C"))
+                PriorityConfiguration(shares = 20.0) to producer("A"),
+                PriorityConfiguration(shares = 20.0) to producer("B"),
+                PriorityConfiguration(shares = 20.0) to producer("C")
             )
         )
 
@@ -110,7 +110,7 @@ class SchedulerTest {
         val values = Scheduler().schedule(
             epochs = fixedEpochs(epochs),
             producers = listOf(
-                Pair(PriorityConfiguration(shares = 20.0), producer("A"))
+                PriorityConfiguration(shares = 20.0) to producer("A")
             )
         )
 
@@ -131,9 +131,9 @@ class SchedulerTest {
             epochs = fixedEpochs(epochs),
             priorityEventHandler = priorityUpdateEvents::add,
             producers = listOf(
-                Pair(PriorityConfiguration(shares = 15.0), producerA),
-                Pair(PriorityConfiguration(shares = 15.0), producerB),
-                Pair(PriorityConfiguration(shares = 70.0, possiblePenalty = 40.0), nullProducer),
+                PriorityConfiguration(shares = 15.0) to producerA,
+                PriorityConfiguration(shares = 15.0) to producerB,
+                PriorityConfiguration(shares = 70.0, possiblePenalty = 40.0) to nullProducer,
             )
         )
 
@@ -170,9 +170,9 @@ class SchedulerTest {
             epochs = fixedEpochs(epochs),
             priorityEventHandler = priorityUpdateEvents::add,
             producers = listOf(
-                Pair(PriorityConfiguration(shares = 15.0), producerA),
-                Pair(PriorityConfiguration(shares = 15.0), producerB),
-                Pair(PriorityConfiguration(shares = 70.0, possiblePenalty = 40.0), nullProducer),
+                PriorityConfiguration(shares = 15.0) to producerA,
+                PriorityConfiguration(shares = 15.0) to producerB,
+                PriorityConfiguration(shares = 70.0, possiblePenalty = 40.0) to nullProducer,
             )
         ).toList()
 
