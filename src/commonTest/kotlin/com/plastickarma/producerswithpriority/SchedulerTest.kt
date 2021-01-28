@@ -7,34 +7,6 @@ import kotlin.test.assertEquals
 
 class SchedulerTest {
 
-    private fun producer(value: String?): Producer<String> = object : Producer<String> {
-        override suspend fun next(): String? {
-            return value
-        }
-    }
-
-    private fun producerWithNull(vararg values: String?): Producer<String> = object : Producer<String> {
-        val iterator = values.iterator()
-        var lastValue: String? = null
-        override suspend fun next(): String? {
-            if (iterator.hasNext()) {
-                lastValue = iterator.next()
-            }
-            return lastValue
-        }
-    }
-
-    private fun producerWithFailure() = object : Producer<String> {
-        override suspend fun next(): String? {
-            error("producer error")
-        }
-    }
-
-    private fun fixedEpochs(epochs: Int): EpochGenerator {
-        var counter = 0
-        return { counter++ < epochs }
-    }
-
     @Test
     fun three_different_shares() = runBlockingTest {
         val epochs = 1000000
@@ -229,12 +201,4 @@ class SchedulerTest {
     }
 
     private fun <T> List<PrioritizedProducer<T>>.getBy(producer: Producer<T>) = this.find { it.producer == producer }!!
-
-    private fun assertCloseTo(expected: Double, actual: Double, e: Double = 0.05) {
-        if (actual >= expected - e && actual <= expected + e) {
-            return
-        } else {
-            throw AssertionError("$actual not between ${expected - e} and ${expected + e}")
-        }
-    }
 }
