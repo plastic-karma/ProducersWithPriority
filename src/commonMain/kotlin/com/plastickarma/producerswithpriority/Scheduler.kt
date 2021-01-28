@@ -17,10 +17,16 @@ class Scheduler {
         producers: List<Pair<PriorityConfiguration, Producer<T>>>,
         epochs: EpochGenerator = INFINITE,
         priorityEventHandler: (List<PrioritizedProducer<T>>) -> Unit = { },
+        strategy: WorkStrategy = WorkStrategy.DISTRIBUTION
     ): Flow<T> {
         val penalties: MutableMap<Producer<T>, Double> = mutableMapOf()
         var (sum, prioritizedProducers) = buildPrioritizedProducers(producers, penalties)
         val random: Random = Random.Default
+
+        val nextProducerPicker: () -> PrioritizedProducer<T> = when (strategy) {
+            WorkStrategy.DISTRIBUTION -> distributionScheduler({ random.nextDouble(0.0, sum) }, prioritizedProducers)
+            WorkStrategy.ROUND_ROBIN -> roundRobinScheduler(prioritizedProducers)
+        }
 
         fun updatePriorities() {
             val updatedPriority = buildPrioritizedProducers(producers, penalties)
@@ -31,8 +37,7 @@ class Scheduler {
 
         return flow {
             while (epochs()) {
-                val next: Double = random.nextDouble(0.0, sum)
-                val nextProducer = getNextProducer(next, prioritizedProducers)
+                val nextProducer = nextProducerPicker.invoke()
                 val nextValue = try { nextProducer.producer.next() } catch (_: Throwable) { null }
                 if (nextValue != null) {
                     emit(nextValue)
@@ -52,15 +57,6 @@ class Scheduler {
                 }
             }
         }
-    }
-
-    private fun <T> getNextProducer(next: Double, producers: List<PrioritizedProducer<T>>): PrioritizedProducer<T> {
-        for (producer in producers) {
-            if (next in producer.rangeConfiguration.range) {
-                return producer
-            }
-        }
-        error("no producer found for $next in $producers")
     }
 
     private fun <T> buildPrioritizedProducers(

@@ -200,5 +200,31 @@ class SchedulerTest {
         assertCloseTo(0.15, cValues / epochs)
     }
 
+    @Test
+    fun round_robin() = runBlockingTest {
+        val epochs = 15
+        val values = Scheduler().schedule(
+            epochs = fixedEpochs(epochs),
+            producers = listOf(
+                PriorityConfiguration(shares = 30.0) to producer("A"),
+                PriorityConfiguration(shares = 30.0) to producer("B"),
+                PriorityConfiguration(shares = 30.0) to producer("C"),
+            ),
+            strategy = WorkStrategy.ROUND_ROBIN
+        )
+
+        val collectedValues = values.toList()
+        assertEquals(
+            listOf(
+                "A", "B", "C",
+                "A", "B", "C",
+                "A", "B", "C",
+                "A", "B", "C",
+                "A", "B", "C",
+            ),
+            collectedValues
+        )
+    }
+
     private fun <T> List<PrioritizedProducer<T>>.getBy(producer: Producer<T>) = this.find { it.producer == producer }!!
 }
