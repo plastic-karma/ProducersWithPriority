@@ -24,6 +24,12 @@ class SchedulerTest {
         }
     }
 
+    private fun producerWithFailure() = object : Producer<String> {
+        override suspend fun next(): String? {
+            error("producer error")
+        }
+    }
+
     private fun fixedEpochs(epochs: Int): EpochGenerator {
         var counter = 0
         return { counter++ < epochs }
@@ -200,13 +206,35 @@ class SchedulerTest {
         assertEquals(SemiOpenRange(30.0, 100.0), priorityUpdateEvents[3].getBy(nullProducer).rangeConfiguration.range)
     }
 
+    @Test
+    fun exceptions_from_producer_are_ignored() = runBlockingTest {
+        val epochs = 100000
+        val values = Scheduler().schedule(
+            epochs = fixedEpochs(epochs),
+            producers = listOf(
+                PriorityConfiguration(shares = 15.0) to producer("A"),
+                PriorityConfiguration(shares = 70.0) to producerWithFailure(),
+                PriorityConfiguration(shares = 15.0) to producer("C")
+            )
+        )
+
+        val collectedValues = values.toList()
+        val aValues = collectedValues.filter { it == "A" }.size.toDouble()
+        val bValues = collectedValues.filter { it == "B" }.size.toDouble()
+        val cValues = collectedValues.filter { it == "C" }.size.toDouble()
+
+        assertCloseTo(0.15, aValues / epochs)
+        assertCloseTo(0.00, bValues / epochs)
+        assertCloseTo(0.15, cValues / epochs)
+    }
+
     private fun <T> List<PrioritizedProducer<T>>.getBy(producer: Producer<T>) = this.find { it.producer == producer }!!
 
     private fun assertCloseTo(expected: Double, actual: Double, e: Double = 0.05) {
         if (actual >= expected - e && actual <= expected + e) {
             return
         } else {
-            throw AssertionError("$actual not with ${expected - e} and ${expected + e}")
+            throw AssertionError("$actual not between ${expected - e} and ${expected + e}")
         }
     }
 }

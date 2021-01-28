@@ -6,7 +6,7 @@ package com.plastickarma.producerswithpriority
 interface Producer<T> {
 
     /**
-     * Get value.
+     * Get value. The producer must never throw an exception. All exceptions must be handled inside next function.
      */
     suspend fun next(): T?
 }

@@ -33,7 +33,7 @@ class Scheduler {
             while (epochs()) {
                 val next: Double = random.nextDouble(0.0, sum)
                 val nextProducer = getNextProducer(next, prioritizedProducers)
-                val nextValue = nextProducer.producer.next()
+                val nextValue = try { nextProducer.producer.next() } catch (_: Throwable) { null }
                 if (nextValue != null) {
                     emit(nextValue)
                     if (nextProducer.producer in penalties) {
