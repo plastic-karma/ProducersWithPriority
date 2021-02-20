@@ -21,6 +21,19 @@ Scheduler().schedule(
 )
 ```
 
+### Penalties
+You can define penalties for producers, when they produce `null`. This is useful if you are reading from different queues and the queue is empty for a while. In the following example, the share distribution is initially 15% (15 shares), 15% (15 shares), 70% (70 shares). When producer C returns `null` it's shares will drop by 40 to 30 and the new distribution is 25% (15 shares), 25% (15 shares), 50% (30 shares). Once producer C returned a non-null value, the shares are restored to their original distribution.
+
+```kotlin
+Scheduler().schedule(
+    producers = listOf(
+        PriorityConfiguration(shares = 15.0) to producer("A"),
+        PriorityConfiguration(shares = 15.0) to producer("B"),
+        PriorityConfiguration(shares = 70.0, possiblePenalty = 40.0) to producer("C"),
+    )
+)
+```
+
 ### Fair share
 You can use `fair` to create an equal amount of shares between producers:
 ```kotlin
