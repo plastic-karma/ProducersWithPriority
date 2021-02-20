@@ -32,3 +32,12 @@ Schedulers.fair(
 )
 ```
 
+## Round Robin
+You can also create a round-robin by setting it as a work strategy:
+```kotlin
+Scheduler().schedule(
+    producers = ...
+    strategy = WorkStrategy.ROUND_ROBIN
+)
+```
+
