@@ -138,6 +138,45 @@ class SchedulerTest {
     }
 
     @Test
+    fun producers_with_high_penalties() = runBlockingTest {
+        val producerA = producer("A")
+        val producerB = producer("B")
+        val nullProducer = producer(null)
+        val epochs = 1000000
+        val priorityUpdateEvents = mutableListOf<List<PrioritizedProducer<String>>>()
+        val values = Scheduler().schedule(
+            epochs = fixedEpochs(epochs),
+            priorityEventHandler = priorityUpdateEvents::add,
+            producers = listOf(
+                PriorityConfiguration(shares = 1000.0, possiblePenalty = 999.0) to producerA,
+                PriorityConfiguration(shares = 1000.0, possiblePenalty = 999.0) to producerB,
+                PriorityConfiguration(shares = 1000.0, possiblePenalty = 999.0) to nullProducer,
+            )
+        )
+
+        val collectedValues = values.toList()
+        val aValues = collectedValues.filter { it == "A" }.size.toDouble()
+        val bValues = collectedValues.filter { it == "B" }.size.toDouble()
+
+        // original shares where (1000 + 1000 + 1000) = 3000. So without penalty the distribution would be 33%.
+        // with penalty we have (1000 + 1000 + (1000 - 999)) = 2001 shares. So the distribution should be 1000 / 2001 = 49%.
+        assertCloseTo(0.49, aValues / epochs)
+        assertCloseTo(0.49, bValues / epochs)
+
+        // we expect one update in priorities
+        assertEquals(1, priorityUpdateEvents.size)
+
+        // range of first producer has not changed
+        assertEquals(SemiOpenRange(1.0, 1001.0), priorityUpdateEvents.first().getBy(producerA).rangeConfiguration.range)
+
+        // range of second producer has not changed
+        assertEquals(SemiOpenRange(1001.0, 2001.0), priorityUpdateEvents.first().getBy(producerB).rangeConfiguration.range)
+
+        // range of null producer has changed
+        assertEquals(SemiOpenRange(0.0, 1.0), priorityUpdateEvents.first().getBy(nullProducer).rangeConfiguration.range)
+    }
+
+    @Test
     fun producers_with_penalties_multiple_changes() = runBlockingTest {
         val producerA = producer("A")
         val producerB = producer("B")
@@ -176,6 +215,47 @@ class SchedulerTest {
         assertEquals(SemiOpenRange(0.0, 15.0), priorityUpdateEvents[3].getBy(producerA).rangeConfiguration.range)
         assertEquals(SemiOpenRange(15.0, 30.0), priorityUpdateEvents[3].getBy(producerB).rangeConfiguration.range)
         assertEquals(SemiOpenRange(30.0, 100.0), priorityUpdateEvents[3].getBy(nullProducer).rangeConfiguration.range)
+    }
+
+    @Test
+    fun producers_with_high_penalties_multiple_changes() = runBlockingTest {
+        val producerA = producer("A")
+        val producerB = producer("B")
+        val nullProducer = producerWithNull("C", null, "C", "C", null, "C")
+        val epochs = 1000000
+        val priorityUpdateEvents = mutableListOf<List<PrioritizedProducer<String>>>()
+        Scheduler().schedule(
+            epochs = fixedEpochs(epochs),
+            priorityEventHandler = priorityUpdateEvents::add,
+            producers = listOf(
+                PriorityConfiguration(shares = 1000.0) to producerA,
+                PriorityConfiguration(shares = 1000.0) to producerB,
+                PriorityConfiguration(shares = 1000.0, possiblePenalty = 999.0) to nullProducer,
+            )
+        ).toList()
+
+        // we expect four updates in priorities
+        assertEquals(4, priorityUpdateEvents.size)
+
+        // first change: nullProducer changes 0.2% shares
+        assertEquals(SemiOpenRange(1.0, 1001.0), priorityUpdateEvents[0].getBy(producerA).rangeConfiguration.range)
+        assertEquals(SemiOpenRange(1001.0, 2001.0), priorityUpdateEvents[0].getBy(producerB).rangeConfiguration.range)
+        assertEquals(SemiOpenRange(0.0, 1.0), priorityUpdateEvents[0].getBy(nullProducer).rangeConfiguration.range)
+
+        // second change: nullProducer changes back to 1000 shares
+        assertEquals(SemiOpenRange(0.0, 1000.0), priorityUpdateEvents[1].getBy(producerA).rangeConfiguration.range)
+        assertEquals(SemiOpenRange(1000.0, 2000.0), priorityUpdateEvents[1].getBy(producerB).rangeConfiguration.range)
+        assertEquals(SemiOpenRange(2000.0, 3000.0), priorityUpdateEvents[1].getBy(nullProducer).rangeConfiguration.range)
+
+        // third change: nullProducer changes 0.2% shares
+        assertEquals(SemiOpenRange(1.0, 1001.0), priorityUpdateEvents[2].getBy(producerA).rangeConfiguration.range)
+        assertEquals(SemiOpenRange(1001.0, 2001.0), priorityUpdateEvents[2].getBy(producerB).rangeConfiguration.range)
+        assertEquals(SemiOpenRange(0.0, 1.0), priorityUpdateEvents[2].getBy(nullProducer).rangeConfiguration.range)
+
+        // fourth change: nullProducer changes back to 1000 shares
+        assertEquals(SemiOpenRange(0.0, 1000.0), priorityUpdateEvents[3].getBy(producerA).rangeConfiguration.range)
+        assertEquals(SemiOpenRange(1000.0, 2000.0), priorityUpdateEvents[3].getBy(producerB).rangeConfiguration.range)
+        assertEquals(SemiOpenRange(2000.0, 3000.0), priorityUpdateEvents[3].getBy(nullProducer).rangeConfiguration.range)
     }
 
     @Test

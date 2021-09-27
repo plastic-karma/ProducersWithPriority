@@ -42,4 +42,27 @@ class SchedulersTest {
 
         assertCloseTo(1.00, aValues / epochs)
     }
+
+    @Test
+    fun penalizeEmpty_puts_penalty_on_null_producer() = runBlockingTest {
+        val producerA = producer("A")
+        val producerB = producer("B")
+        val nullProducer = producer(null)
+        val epochs = 1000000
+        val values = penalizeEmpty(
+            epochs = fixedEpochs(epochs),
+            producerA,
+            producerB,
+            nullProducer
+        )
+
+        val collectedValues = values.toList()
+        val aValues = collectedValues.filter { it == "A" }.size.toDouble()
+        val bValues = collectedValues.filter { it == "B" }.size.toDouble()
+
+        // original shares where (1000 + 1000 + 1000) = 3000. So without penalty the distribution would be 33%.
+        // with penalty we have (1000 + 1000 + (1000 - 999)) = 2001 shares. So the distribution should be 1000 / 2001 = 49.9%.
+        assertCloseTo(0.499, aValues / epochs)
+        assertCloseTo(0.499, bValues / epochs)
+    }
 }
