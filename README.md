@@ -10,11 +10,11 @@
 Library to prioritize streams of data. If you have producers of data, that produce the same data, but you want to consume data from some producers sooner or more often than from others, this library let's you do that.
 
 ## Shares
-The simplest way of prioritizing producers is to assign shares. In the following example, producer A is invoked 60% of the time, producer B 15% and producer C 5%.
+The simplest way of prioritizing producers is to assign shares. In the following example, producer A is invoked 70% of the time, producer B 15% and producer C 5%.
 ```kotlin
 Scheduler().schedule(
     producers = listOf(
-        PriorityConfiguration(shares = 60.0) to producer("A"),
+        PriorityConfiguration(shares = 70.0) to producer("A"),
         PriorityConfiguration(shares = 15.0) to producer("B"),
         PriorityConfiguration(shares =  5.0) to producer("C")
     )
