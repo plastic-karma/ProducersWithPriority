@@ -54,3 +54,18 @@ Scheduler().schedule(
 )
 ```
 
+## Producers
+ The libraries main abstraction to retrieve data is [Producer](https://github.com/plastic-karma/ProducersWithPriority/blob/mainline/src/commonMain/kotlin/com/plastickarma/producerswithpriority/Producer.kt) interface.
+
+### flatten
+If your data source is providing data in batches, you can use the [flatten](https://github.com/plastic-karma/ProducersWithPriority/blob/mainline/src/commonMain/kotlin/com/plastickarma/producerswithpriority/ProducerExtensions.kt#L12) function to be able to treat each element of the batch as a single entity when determining priority.
+
+```kotlin
+val batchProducer: Producer<Set<MyObject>> = ...// e.g. read from queue
+Scheduler().schedule(producers = batchProducer.flatten(), ...)
+```
+
+
+
+
+
