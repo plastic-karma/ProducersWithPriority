@@ -22,3 +22,19 @@ fun producerWithFailure() = object : Producer<String> {
         error("producer error")
     }
 }
+
+suspend fun <T> Producer<T>.collectUntilNull(): List<T> {
+    return collectWhile { it != null }.mapNotNull { it }
+}
+
+suspend fun <T> Producer<T>.collectWhile(predicate: (T?) -> Boolean): List<T?> {
+    val list = mutableListOf<T?>()
+    while (true) {
+        val next = this.next()
+        if (predicate(next)) {
+            list.add(next)
+        } else {
+            return list
+        }
+    }
+}
