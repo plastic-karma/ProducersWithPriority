@@ -79,7 +79,7 @@ class Scheduler {
             return initialShares[this]!!
         }
 
-        val allShares = producers.sumByDouble { it.shares() }
+        val allShares = producers.sumOf { it.shares() }
         var allRange = 0.0.until(allShares)
         producers
             .sortedBy { it.shares() }
