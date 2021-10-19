@@ -23,9 +23,9 @@ class Scheduler {
         var (sum, prioritizedProducers) = buildPrioritizedProducers(producers, penalties)
         val random: Random = Random.Default
 
-        val nextProducerPicker: () -> PrioritizedProducer<T> = when (strategy) {
-            WorkStrategy.DISTRIBUTION -> distributionScheduler({ random.nextDouble(0.0, sum) }, prioritizedProducers)
-            WorkStrategy.ROUND_ROBIN -> roundRobinScheduler(prioritizedProducers)
+        val nextProducerPicker: (List<PrioritizedProducer<T>>) -> PrioritizedProducer<T> = when (strategy) {
+            WorkStrategy.DISTRIBUTION -> distributionScheduler { random.nextDouble(0.0, sum) }
+            WorkStrategy.ROUND_ROBIN -> roundRobinScheduler()
         }
 
         fun updatePriorities() {
@@ -37,7 +37,7 @@ class Scheduler {
 
         return flow {
             while (epochs()) {
-                val nextProducer = nextProducerPicker.invoke()
+                val nextProducer = nextProducerPicker.invoke(prioritizedProducers)
                 val nextValue = try { nextProducer.producer.next() } catch (_: Throwable) { null }
                 if (nextValue != null) {
                     emit(nextValue)
@@ -79,7 +79,7 @@ class Scheduler {
             return initialShares[this]!!
         }
 
-        val allShares = producers.sumOf { it.shares() }
+        val allShares = producers.sumByDouble { it.shares() }
         var allRange = 0.0.until(allShares)
         producers
             .sortedBy { it.shares() }
