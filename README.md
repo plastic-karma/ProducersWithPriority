@@ -1,10 +1,7 @@
 # ProducersWithPriority
-[![Kotlin version badge](https://img.shields.io/badge/kotlin-1.5-blue.svg)](https://kotlinlang.org/docs/whatsnew15.html) 
+[![Build](https://github.com/plastic-karma/ProducersWithPriority/actions/workflows/build.yml/badge.svg?branch=mainline)](https://github.com/plastic-karma/ProducersWithPriority/actions/workflows/build.yml)
+[![Kotlin version badge](https://img.shields.io/badge/kotlin-2.3-blue.svg)](https://kotlinlang.org/docs/whatsnew23.html)
 ![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)
-[![Build Status](https://api.travis-ci.com/plastic-karma/ProducersWithPriority.svg?branch=mainline)](https://travis-ci.com/github/plastic-karma/ProducersWithPriority)
-[![Maintainability](https://codeclimate.com/github/plastic-karma/ProducersWithPriority/badges/gpa.svg
-)](https://codeclimate.com/github/plastic-karma/ProducersWithPriority/maintainability)
-[![Codacy Badge](https://api.codacy.com/project/badge/Grade/542dbabd278e4f0d822908c18b2ebb4a)](https://app.codacy.com/gh/plastic-karma/ProducersWithPriority?utm_source=github.com&utm_medium=referral&utm_content=plastic-karma/ProducersWithPriority&utm_campaign=Badge_Grade)
 
 
 Library to prioritize streams of data. If you have producers of data, that produce the same data, but you want to consume data from some producers sooner or more often than from others, this library let's you do that.
