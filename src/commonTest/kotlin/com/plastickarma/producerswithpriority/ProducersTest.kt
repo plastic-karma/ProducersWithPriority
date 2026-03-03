@@ -41,6 +41,26 @@ class ProducersTest {
             )
         }
 
+    @Test
+    fun flatten_empty_batch_returns_null() =
+        runTest {
+            val listProducer =
+                ListProducer(
+                    listOf(
+                        listOf("A", "B"),
+                        emptyList(),
+                        listOf("C"),
+                    ),
+                )
+            // empty batch should produce null (same semantics as a null batch),
+            // then "C" should follow on subsequent calls
+            val flattened = listProducer.flatten()
+            assertEquals("A", flattened.next())
+            assertEquals("B", flattened.next())
+            assertEquals(null, flattened.next()) // empty batch → null, not NoSuchElementException
+            assertEquals("C", flattened.next())
+        }
+
     private class ListProducer(
         data: List<List<String>?>,
     ) : Producer<List<String>> {

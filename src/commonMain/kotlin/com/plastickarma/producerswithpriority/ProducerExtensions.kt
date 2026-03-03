@@ -17,7 +17,11 @@ fun <T> Producer<out Iterable<T>>.flatten(): Producer<T> {
             if (iterator?.hasNext() != true) {
                 iterator = this@flatten.next()?.iterator()
             }
-            return iterator?.next()
+            return if (iterator?.hasNext() == true) {
+                iterator?.next()
+            } else {
+                null
+            }
         }
     }
 }
