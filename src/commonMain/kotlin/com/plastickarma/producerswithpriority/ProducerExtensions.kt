@@ -12,6 +12,7 @@ package com.plastickarma.producerswithpriority
 fun <T> Producer<out Iterable<T>>.flatten(): Producer<T> {
     return object : Producer<T> {
         private var iterator: Iterator<T>? = null
+
         override suspend fun next(): T? {
             if (iterator?.hasNext() != true) {
                 iterator = this@flatten.next()?.iterator()

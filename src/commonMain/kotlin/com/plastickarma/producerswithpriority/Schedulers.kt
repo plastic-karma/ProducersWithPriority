@@ -12,13 +12,12 @@ private const val EMPTY_PENALTY = 999.0
  */
 fun <T> fair(
     epochs: EpochGenerator = INFINITE,
-    vararg producers: Producer<T>
-): Flow<T> {
-    return Scheduler().schedule(
+    vararg producers: Producer<T>,
+): Flow<T> =
+    Scheduler().schedule(
         producers = producers.map { PriorityConfiguration(shares = FAIR_SHARE) to it },
-        epochs = epochs
+        epochs = epochs,
     )
-}
 
 /**
  * Returns a flow in which each producer has the same amount of shares and will be treated with equal priority. When
@@ -38,10 +37,9 @@ fun <T> fair(
  */
 fun <T> penalizeEmpty(
     epochs: EpochGenerator,
-    vararg producers: Producer<T>
-): Flow<T> {
-    return Scheduler().schedule(
+    vararg producers: Producer<T>,
+): Flow<T> =
+    Scheduler().schedule(
         producers = producers.map { PriorityConfiguration(shares = FAIR_SHARE, EMPTY_PENALTY) to it },
-        epochs = epochs
+        epochs = epochs,
     )
-}

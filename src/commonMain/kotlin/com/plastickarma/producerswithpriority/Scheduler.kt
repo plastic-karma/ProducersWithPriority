@@ -8,7 +8,6 @@ import kotlin.random.Random
  * Encapsulates logic to schedule different producers with priority configuration.
  */
 class Scheduler {
-
     /**
      * Schedules different producers with priority configuration.
      * @return [Flow] of values that come from the given producers.
@@ -17,16 +16,17 @@ class Scheduler {
         producers: List<Pair<PriorityConfiguration, Producer<T>>>,
         epochs: EpochGenerator = INFINITE,
         priorityEventHandler: (List<PrioritizedProducer<T>>) -> Unit = { },
-        strategy: WorkStrategy = WorkStrategy.DISTRIBUTION
+        strategy: WorkStrategy = WorkStrategy.DISTRIBUTION,
     ): Flow<T> {
         val penalties: MutableMap<Producer<T>, Double> = mutableMapOf()
         var (sum, prioritizedProducers) = buildPrioritizedProducers(producers, penalties)
         val random: Random = Random.Default
 
-        val nextProducerPicker: (List<PrioritizedProducer<T>>) -> PrioritizedProducer<T> = when (strategy) {
-            WorkStrategy.DISTRIBUTION -> distributionScheduler { random.nextDouble(0.0, sum) }
-            WorkStrategy.ROUND_ROBIN -> roundRobinScheduler()
-        }
+        val nextProducerPicker: (List<PrioritizedProducer<T>>) -> PrioritizedProducer<T> =
+            when (strategy) {
+                WorkStrategy.DISTRIBUTION -> distributionScheduler { random.nextDouble(0.0, sum) }
+                WorkStrategy.ROUND_ROBIN -> roundRobinScheduler()
+            }
 
         fun updatePriorities() {
             val updatedPriority = buildPrioritizedProducers(producers, penalties)
@@ -38,7 +38,12 @@ class Scheduler {
         return flow {
             while (epochs()) {
                 val nextProducer = nextProducerPicker.invoke(prioritizedProducers)
-                val nextValue = try { nextProducer.producer.next() } catch (_: Throwable) { null }
+                val nextValue =
+                    try {
+                        nextProducer.producer.next()
+                    } catch (_: Throwable) {
+                        null
+                    }
                 if (nextValue != null) {
                     emit(nextValue)
                     if (nextProducer.producer in penalties) {
@@ -61,7 +66,7 @@ class Scheduler {
 
     private fun <T> buildPrioritizedProducers(
         producers: List<Pair<PriorityConfiguration, Producer<T>>>,
-        penalties: Map<Producer<T>, Double>
+        penalties: Map<Producer<T>, Double>,
     ): Pair<Double, MutableList<PrioritizedProducer<T>>> {
         val prioritizedProducers: MutableList<PrioritizedProducer<T>> = mutableListOf()
 
@@ -75,16 +80,13 @@ class Scheduler {
             }
         }
 
-        fun Pair<PriorityConfiguration, Producer<T>>.shares(): Double {
-            return initialShares[this]!!
-        }
+        fun Pair<PriorityConfiguration, Producer<T>>.shares(): Double = initialShares[this]!!
 
         val allShares = producers.sumByDouble { it.shares() }
         var allRange = 0.0.until(allShares)
         producers
             .sortedBy { it.shares() }
             .forEach {
-
                 // last range
                 if (it.shares() + allRange.start >= allShares) {
                     prioritizedProducers.add(PrioritizedProducer(RangeConfiguration(allRange, it.first), it.second))

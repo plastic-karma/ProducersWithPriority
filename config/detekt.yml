@@ -26,8 +26,6 @@ console-reports:
 
 potential-bugs:
   active: true
-  DuplicateCaseInWhenExpression:
-    active: true
   EqualsAlwaysReturnsTrueOrFalse:
     active: true
   EqualsWithHashCodeExist:
@@ -41,10 +39,6 @@ potential-bugs:
   IteratorNotThrowingNoSuchElementException:
     active: true
   LateinitUsage:
-    active: true
-  MissingWhenCase:
-    active: true
-  RedundantElseInWhen:
     active: true
   UnconditionalJumpStatementInLoop:
     active: true
@@ -74,7 +68,11 @@ exceptions:
   active: true
   ExceptionRaisedInUnexpectedLocation:
     active: false
-    methodNames: 'toString,hashCode,equals,finalize'
+    methodNames:
+      - 'toString'
+      - 'hashCode'
+      - 'equals'
+      - 'finalize'
   InstanceOfCheckForException:
     active: true
   NotImplementedDeclaration:
@@ -153,7 +151,7 @@ complexity:
   ComplexInterface:
     threshold: 4
     includeStaticDeclarations: false
-  ComplexMethod:
+  CyclomaticComplexMethod:
     threshold: 10
   LabeledExpression:
     active: false
@@ -162,7 +160,8 @@ complexity:
   LongMethod:
     threshold: 20
   LongParameterList:
-    threshold: 4
+    functionThreshold: 4
+    constructorThreshold: 4
     ignoreDefaultParameters: false
   MethodOverloading:
     threshold: 2
@@ -184,102 +183,6 @@ complexity:
     ignorePrivate: false
     ignoreOverridden: false
 
-formatting:
-  active: true
-  AnnotationOnSeparateLine:
-    active: true
-    autoCorrect: true
-  ChainWrapping:
-    active: true
-    autoCorrect: true
-  CommentSpacing:
-    active: true
-    autoCorrect: true
-  Filename:
-    active: true
-    autoCorrect: true
-  FinalNewline:
-    active: true
-    autoCorrect: true
-  ImportOrdering:
-    active: true
-    autoCorrect: true
-  Indentation:
-    active: true
-    indentSize: 4
-    continuationIndentSize: 4
-    autoCorrect: true
-  MaximumLineLength:
-    active: true
-    autoCorrect: true
-    maxLineLength: 120
-  ModifierOrdering:
-    active: true
-    autoCorrect: true
-  MultiLineIfElse:
-    active: true
-    autoCorrect: true
-  NoBlankLineBeforeRbrace:
-    active: true
-    autoCorrect: true
-  NoConsecutiveBlankLines:
-    active: true
-    autoCorrect: true
-  NoEmptyClassBody:
-    active: true
-    autoCorrect: true
-  NoLineBreakAfterElse:
-    active: true
-    autoCorrect: true
-  NoLineBreakBeforeAssignment:
-    active: true
-    autoCorrect: true
-  NoMultipleSpaces:
-    active: true
-    autoCorrect: true
-  NoSemicolons:
-    active: true
-    autoCorrect: true
-  NoTrailingSpaces:
-    active: true
-    autoCorrect: true
-  NoUnitReturn:
-    active: true
-    autoCorrect: true
-  NoUnusedImports:
-    active: true
-    autoCorrect: true
-  NoWildcardImports:
-    active: true
-    autoCorrect: true
-  PackageName:
-    active: true
-    autoCorrect: true
-  ParameterListWrapping:
-    active: true
-    autoCorrect: true
-  SpacingAroundColon:
-    active: true
-    autoCorrect: true
-  SpacingAroundCurly:
-    active: true
-    autoCorrect: true
-  SpacingAroundKeyword:
-    active: true
-    autoCorrect: true
-  SpacingAroundOperators:
-    active: true
-    autoCorrect: true
-  SpacingAroundParens:
-    active: true
-    autoCorrect: true
-  SpacingAroundRangeOperator:
-    active: true
-    autoCorrect: true
-  StringTemplate:
-    active: true
-    autoCorrect: true
-
 style:
   active: true
   CollapsibleIfStatements:
@@ -298,10 +201,13 @@ style:
     active: true
   ForbiddenComment:
     active: true
-    values: 'TODO:,FIXME:,STOPSHIP:'
+    comments:
+      - 'TODO:'
+      - 'FIXME:'
+      - 'STOPSHIP:'
   ForbiddenImport:
     active: true
-    imports: ''
+    imports: []
   ForbiddenVoid:
     active: true
   FunctionOnlyReturningConstant:
@@ -310,12 +216,22 @@ style:
     active: true
   MagicNumber:
     active: true
-    ignoreNumbers: '-1,0,1,2'
+    ignoreNumbers:
+      - '-1'
+      - '0'
+      - '1'
+      - '2'
     ignoreHashCodeFunction: false
     ignorePropertyDeclaration: false
     ignoreAnnotation: false
-  MandatoryBracesIfStatements:
+  BracesOnIfStatements:
     active: true
+    singleLine: 'always'
+    multiLine: 'always'
+  BracesOnWhenStatements:
+    active: true
+    singleLine: 'necessary'
+    multiLine: 'necessary'
   MaxLineLength:
     active: true
     maxLineLength: 120
@@ -334,8 +250,6 @@ style:
   OptionalAbstractKeyword:
     active: true
   OptionalUnit:
-    active: true
-  OptionalWhenBraces:
     active: true
   PreferToOverPairSyntax:
     active: true
@@ -403,7 +317,7 @@ naming:
     enumEntryPattern: '^[A-Z$][a-zA-Z_$]*$'
   ForbiddenClassName:
     active: true
-    forbiddenName: ''
+    forbiddenName: []
   FunctionMaxLength:
     active: true
     maximumFunctionNameLength: 25
