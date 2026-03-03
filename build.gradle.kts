@@ -66,3 +66,15 @@ detekt {
 tasks.assemble {
     dependsOn(tasks.check)
 }
+
+tasks.named("kotlinNpmInstall") {
+    doFirst {
+        val npmrc =
+            layout.buildDirectory
+                .file("js/.npmrc")
+                .get()
+                .asFile
+        npmrc.parentFile.mkdirs()
+        npmrc.writeText("registry=https://registry.npmjs.org/\n")
+    }
+}

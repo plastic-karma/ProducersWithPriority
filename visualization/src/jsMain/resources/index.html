@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ProducersWithPriority — Scheduler Visualization</title>
+    <style>
+        body { font-family: monospace; background: #1e1e1e; color: #ccc; padding: 2rem; }
+        h1   { color: #fff; margin-bottom: 0.25rem; }
+        p    { color: #888; margin-top: 0; }
+        #timeline { display: flex; flex-wrap: wrap; gap: 4px; margin: 1.5rem 0; }
+        .cell {
+            width: 36px; height: 36px; border-radius: 4px;
+            display: flex; align-items: center; justify-content: center;
+            font-weight: bold; font-size: 14px; color: #fff;
+            opacity: 0; transition: opacity 0.15s ease;
+        }
+        .cell.visible { opacity: 1; }
+        #stats { display: flex; gap: 2rem; margin-top: 1rem; }
+        .stat { display: flex; align-items: center; gap: 8px; }
+        .stat-swatch { width: 16px; height: 16px; border-radius: 3px; }
+        #controls { margin-bottom: 0.75rem; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+        button, select {
+            background: #333; color: #fff; border: 1px solid #555;
+            padding: 6px 14px; border-radius: 4px; cursor: pointer;
+        }
+        button:hover { background: #444; }
+        select { padding: 6px 10px; }
+        #share-controls { display: none; margin-bottom: 1rem; }
+        .share-row { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; }
+        .share-label { font-weight: bold; font-size: 15px; width: 14px; }
+        .share-value { width: 28px; text-align: right; color: #aaa; }
+        input[type=range] { accent-color: #888; width: 200px; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <h1>Scheduler Visualization</h1>
+    <p id="description"></p>
+    <div id="controls">
+        <select id="sim-select">
+            <option value="round-robin">Round Robin</option>
+            <option value="fair">Fair (Distribution)</option>
+            <option value="custom">Custom Shares</option>
+        </select>
+        <button id="btn-start">Start</button>
+        <button id="btn-pause" disabled>Pause</button>
+        <button id="btn-faster">Faster</button>
+        <button id="btn-slower">Slower</button>
+    </div>
+    <div id="share-controls">
+        <div class="share-row">
+            <span class="share-label" style="color:#4285F4">A</span>
+            <input type="range" id="share-A" min="1" max="100" value="50">
+            <span class="share-value" id="share-A-val">50</span>
+        </div>
+        <div class="share-row">
+            <span class="share-label" style="color:#EA4335">B</span>
+            <input type="range" id="share-B" min="1" max="100" value="50">
+            <span class="share-value" id="share-B-val">50</span>
+        </div>
+        <div class="share-row">
+            <span class="share-label" style="color:#34A853">C</span>
+            <input type="range" id="share-C" min="1" max="100" value="50">
+            <span class="share-value" id="share-C-val">50</span>
+        </div>
+        <div class="share-row">
+            <span class="share-label" style="color:#FBBC05">D</span>
+            <input type="range" id="share-D" min="1" max="100" value="50">
+            <span class="share-value" id="share-D-val">50</span>
+        </div>
+    </div>
+    <div id="timeline"></div>
+    <div id="stats"></div>
+<script src="visualization.js"></script>
+</body>
+</html>
