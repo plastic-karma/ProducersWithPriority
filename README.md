@@ -51,6 +51,40 @@ Scheduler().schedule(
 )
 ```
 
+## Visualization
+
+The `visualization/` subproject contains an interactive browser-based demo that animates how the different schedulers select producers in real time. It uses the library directly and produces a self-contained `index.html` + bundled JS file that can be opened locally in any browser.
+
+### Simulation modes
+
+| Mode | Description |
+|---|---|
+| **Round Robin** | Cycles A → B → C → D in strict order |
+| **Fair (Distribution)** | Randomly picks producers with equal share weights |
+| **Custom Shares** | Lets you set a share value (1–100) per producer via sliders |
+
+### Controls
+
+- **Start** — begins the simulation; click again at any time to restart from scratch
+- **Pause / Continue** — suspends and resumes the running simulation
+- **Faster / Slower** — adjusts the animation speed
+
+### Build and open
+
+```bash
+# Build the standalone page
+./gradlew :visualization:jsBrowserDistribution
+
+# Open in browser (macOS)
+open visualization/build/dist/js/productionExecutable/index.html
+```
+
+The visualization subproject has no effect on the library artifact. Building only the library remains:
+
+```bash
+./gradlew :check
+```
+
 ## Producers
  The libraries main abstraction to retrieve data is [Producer](https://github.com/plastic-karma/ProducersWithPriority/blob/mainline/src/commonMain/kotlin/com/plastickarma/producerswithpriority/Producer.kt) interface.
 
