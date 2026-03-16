@@ -1,5 +1,5 @@
 plugins {
-    id("org.jetbrains.kotlin.multiplatform") version "2.3.10"
+    id("org.jetbrains.kotlin.multiplatform") version "2.3.20"
     id("io.gitlab.arturbosch.detekt") version "1.23.8"
     id("org.jlleitschuh.gradle.ktlint") version "14.1.0"
     id("org.jetbrains.kotlinx.kover") version "0.9.7"
