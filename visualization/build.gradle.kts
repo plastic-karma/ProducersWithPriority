@@ -21,7 +21,7 @@ kotlin {
         jsMain {
             dependencies {
                 implementation(project(":"))
-                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.2")
+                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.11.0")
             }
         }
     }
